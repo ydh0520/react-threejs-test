@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import React, { Component } from "react";
+import threeEntryPoint from './components/threeEntryPoint'
+import "./App.css"
+export default class App extends Component {
+  
+  componentDidMount() {
+    threeEntryPoint("canvas")
+    const fileinput= document.getElementById("fileinput");
+    
+    fileinput.addEventListener('change',function(e){
+      const file = fileinput.files[0];
+      const reader = new FileReader();
+      reader.onload=function(e){
+        console.log(reader.result)
+      }
+      reader.readAsBinaryString(file)
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <input type="file" id="fileinput"/>
+        <div id="canvas"/>
+      </div>
+    )
+  }
 }
-
-export default App;
