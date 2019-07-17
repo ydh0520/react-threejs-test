@@ -15,7 +15,7 @@ export default (domID,data) => {
       //alpha:true,
     });
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth, window.innerHeight-100 );
 
     rootDom.appendChild( renderer.domElement );
 
@@ -36,7 +36,7 @@ export default (domID,data) => {
 
     scene.add( mesh );
     mesh.rotation.x+=5;
-    
+    /*
     const animation = function(){
 
         requestAnimationFrame(animation);
@@ -46,6 +46,35 @@ export default (domID,data) => {
     }
 
     animation()
+    */
+
+
+    const moveMesh = (x,y) => {
+        mesh.rotation.z+=x*0.01;
+        mesh.rotation.x+=y*0.005;
+        renderer.render(scene,camera)
+    }
+
+    const zoom = (wheelDelta) => {
+        camera.position.z -=wheelDelta;
+        renderer.render(scene,camera)
+    }
 
     renderer.render(scene,camera)
+
+    const mousehandle=function(e){
+        moveMesh(e.movementX,e.movementY)
+    }
+    
+    const whellhandle=function(e){
+        zoom(e.wheelDelta/120)
+    }
+
+    window.addEventListener('mouseup',function(){      
+        window.removeEventListener("mousemove",mousehandle)
+    })
+    window.addEventListener('mousedown',function(){
+        window.addEventListener('mousemove',mousehandle)  
+    })
+    window.addEventListener('mousewheel',whellhandle)
 }
