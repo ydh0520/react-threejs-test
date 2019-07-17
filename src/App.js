@@ -5,16 +5,16 @@ import "./App.css"
 export default class App extends Component {
   
   componentDidMount() {
-    threeEntryPoint("canvas")
     const fileinput= document.getElementById("fileinput");
     
     fileinput.addEventListener('change',function(e){
       const file = fileinput.files[0];
       const reader = new FileReader();
       reader.onload=function(e){
-        console.log(reader.result)
+        const rawData = new Float32Array(reader.result);        
+        threeEntryPoint("canvas",rawData)
       }
-      reader.readAsBinaryString(file)
+      reader.readAsArrayBuffer(file)
     })
   }
 
