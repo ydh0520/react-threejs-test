@@ -1,80 +1,90 @@
 import * as THREE from "three";
-import hexaLine from './hexahedronLine'
+import cp from './cloudPoint'
+import hexaline from "./hexahedronLine"
 
 export default (domID,data) => {
     const rootDom   = document.getElementById(domID);
+
     if(rootDom.hasChildNodes()){
         rootDom.removeChild(rootDom.firstChild)
     }
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 200 );
 
-    camera.position.z =80;
-    console.log(camera)
+    const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer( { 
       //alpha:true,
     });
 
-    renderer.setSize( window.innerWidth, window.innerHeight-100 );
+    let size=window.innerHeight-100;
+    if(window.innerWidth<window.innerHeight-100){
+        size=window.innerWidth
+    }
+    renderer.setSize(size, size );
+
+    const camera = new THREE.PerspectiveCamera( 60, 1, 2, 500 );
+    camera.position.z =73.5;
 
     rootDom.appendChild( renderer.domElement );
+    
+    const cloudPoint = cp.createCloudeopint(data);
+    scene.add( cloudPoint);
 
-    const geometry  = new THREE.Geometry();
+    const raycaster = new THREE.Raycaster();
 
-    for(let i=0;i<data.length;i+=4){
-        geometry.vertices.push(new THREE.Vector3(data[i],data[i+1],data[i+2]));
-        const colorvalue = (data[i+2]+5)*0.1
-        geometry.colors.push(new THREE.Color(colorvalue,1-colorvalue,1))
-    }
 
-    const material = new THREE.PointsMaterial( { size: 0.1, vertexColors: THREE.VertexColors } );
+    scene.add(hexaline)
+    renderer.render(scene,camera)
 
-    const mesh =  new THREE.Points();
-   
-    mesh.geometry=geometry;
-    mesh.material=material;
 
-    scene.add( mesh );
-    mesh.rotation.x+=5;
-    /*
-    const animation = function(){
-
-        requestAnimationFrame(animation);
-        mesh.rotation.z+=0.005;
-        //mesh.rotation.y+=0.002;
+    const render=()=>{
         renderer.render(scene,camera)
     }
-
-    animation()
-    */
-
-
-    const moveMesh = (x,y) => {
-        mesh.rotation.z+=x*0.01;
-        mesh.rotation.x+=y*0.005;
+    //-------------------------------------------//
+    const rotateScene = (movementX,movementY) => {
+        scene.rotation.z+=movementX*0.01
+        scene.rotation.x+=movementY*0.01;
         renderer.render(scene,camera)
     }
 
     const zoom = (wheelDelta) => {
         camera.position.z -=wheelDelta;
+        if(camera.position.z<10)
+            camera.position.z=10
+
+        console.log(camera.position.z)
         renderer.render(scene,camera)
     }
 
-    renderer.render(scene,camera)
-
     const mousehandle=function(e){
-        moveMesh(e.movementX,e.movementY)
+        rotateScene(e.movementX,e.movementY)
     }
     
     const whellhandle=function(e){
         zoom(e.wheelDelta/120)
     }
+    //-------------------------------------------//
+    renderer.domElement.addEventListener('mouseup',function(){      
+        renderer.domElement.removeEventListener("mousemove",mousehandle)
+    })
+    renderer.domElement.addEventListener('mousedown',function(e){
 
-    window.addEventListener('mouseup',function(){      
-        window.removeEventListener("mousemove",mousehandle)
+        const clickX = ( e.offsetX / renderer.domElement.width );
+        const clickY = ( e.offsetY / renderer.domElement.height );
+        const clickPoint = new THREE.Vector3(clickX,clickY,0);
+        raycaster.setFromCamera(clickPoint,camera)
+        console.log(raycaster.near)
+
+        renderer.domElement.addEventListener('mousemove',mousehandle)  
     })
-    window.addEventListener('mousedown',function(){
-        window.addEventListener('mousemove',mousehandle)  
+    renderer.domElement.addEventListener('mousewheel',whellhandle)
+
+    window.addEventListener('resize',function(){
+        let size=window.innerHeight-100;
+        if(window.innerWidth<window.innerHeight-100){
+            size=window.innerWidth
+        }
+        renderer.setSize(size, size );
+        camera.aspect=size/size;
+        renderer.render(scene,camera)
     })
-    window.addEventListener('mousewheel',whellhandle)
+    //-------------------------------------------//
 }
